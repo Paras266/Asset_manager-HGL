@@ -1,0 +1,45 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules
+/client/node_modules
+
+# Environment variables
+.env
+.env.*
+*.env
+*.env.*
+
+# Build output
+dist
+build
+public/uploads
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+.DS_Store
+.vscode
+.idea
+*.pid
+*.seed
+
+# Editor configuration
+.idea
+.vscode
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.user
+*.bak
+
+# Ignore test results
+coverage
+/test/reports

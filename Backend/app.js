@@ -2,6 +2,7 @@ import express from 'express';
 import adminRouter from './router/admin.router.js';
 import assetrouter from './router/asset.router.js';
 import userRouter from './router/user.router.js';
+import authrouter from './router/auth.router.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
@@ -16,6 +17,7 @@ app.use(cookieParser());// enable cookie parsing
 app.use('/api/admin', adminRouter);
 app.use('/api/assets', assetrouter);
 app.use('/api/users', userRouter);
+app.use('/api/auth', authrouter);
 // Test route
 app.get('/', (req, res) => {
   res.send('API is running...');

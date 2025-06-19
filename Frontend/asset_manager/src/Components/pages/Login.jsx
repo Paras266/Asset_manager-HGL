@@ -76,7 +76,7 @@ export const Login = () => {
           <div className="flex justify-between text-sm text-blue-700">
             <button
               type="button"
-              onClick={() => toast("Forgot password functionality coming soon!")}
+              onClick={() => navigate("/forgot-password")}
               className="hover:underline"
             >
               Forgot Password?

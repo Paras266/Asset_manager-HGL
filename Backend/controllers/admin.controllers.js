@@ -7,7 +7,6 @@ const sendToken = (admin, statusCode, res) => {
       expiresIn: '7d',
     });
 
-    console.log(`Generated token for admin ${admin.username}: ${token}`);
     
   
     // Set cookie options
@@ -57,7 +56,6 @@ export const registerAdmin = async (req, res , next) => {
     role,         // frontend sends "admin" or "head-admin"
     headCode      // extra secret code from frontend (only if role === 'head')
   } = req.body;
-console.log(role);
 
   // Step 1: Check if admin already exists
   const existingAdmin = await Admin.findOne({ email });

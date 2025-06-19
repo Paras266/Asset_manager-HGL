@@ -5,7 +5,20 @@ const assetSchema = new mongoose.Schema(
     deviceType: {
       type: String,
       required: true,
-      enum: ['Laptop', 'PC', 'Mouse', 'Keyboard', 'Monitor', 'Printer', 'Other'],
+      enum: ['Laptop', 'PC', 'Mouse', 'Keyboard', 'Monitor', 'Printer', 'Networking','Other'],
+    },
+    OsKey: {
+      type: String,
+      trim: true,
+      match: [/^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$/, 'Invalid OS Key format'],
+      required: true,
+    },
+    
+    OfficeKey: {
+      type: String,
+      trim: true,
+      match: [/^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$/, 'Invalid Office Key format'],
+      required: true,
     },
     modelNumber: {
       type: String,
@@ -138,15 +151,27 @@ const assetSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-
-    // Reference to current user (optional)
-    previousUsers: [
-        {
+// Allocation history
+// This will store the history of allocations and deallocations
+    allocationHistory: [
+      {
+        user: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'User',
-          default: null ,
         },
-      ],
+        allocatedDate: {
+          type: Date,
+          required: true,
+        },
+        deallocatedDate: {
+          type: Date,
+          default: null, // set on deallocation
+        },
+      }
+    ],
+    
+        // Reference to current user (optional)
+
       
     allocatedTo: {
       type: mongoose.Schema.Types.ObjectId,
@@ -157,7 +182,7 @@ const assetSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['available', 'allocated', 'repair', 'damaged'],
+      enum: ['available', 'allocated', 'repair', 'damaged' , "scrape"],
       default: 'available',
     },
   },

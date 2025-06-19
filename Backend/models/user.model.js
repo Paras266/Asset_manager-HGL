@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
     department: {
       type: String,
       required: true,
-      enum: ['IT', 'HR', 'Finance', 'Production', 'Planing', 'Manufacture' , 'Design' , 'Quality'], // update as per your dropdown options
+      enum: ['IT', 'HR', 'Finance', 'Production', 'Planing', 'Manufacture', 'Design', 'Quality'], // update as per your dropdown options
     },
     employeeCode: {
       type: String,
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
     designation: {
       type: String,
       required: true,
-      enum: ['Manager', 'Engineer', 'Technician', 'Intern', 'Executive'], // predefined roles
+      enum: ['Manager', 'Engineer', 'Technician', 'Intern', 'Executive', 'GET'], // predefined roles
     },
     roleInCompany: {
       type: String,
@@ -55,17 +55,19 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    address: {
-      permanent: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-      present: {
-        type: String,
-        required: true,
-        trim: true,
-      },
+
+
+    permanentAddress
+      : {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    presentAddress: {
+      type: String,
+      required: true,
+      trim: true,
+
     },
     contactNumber: {
       type: Number,
@@ -79,18 +81,32 @@ const userSchema = new mongoose.Schema(
     },
     assignedItems: [
       {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: 'Asset',
-      },
+        asset: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Asset',
+          required: true,
+        },
+        allocatedDate: {
+          type: Date,
+          required: true,
+        },
+        deallocatedDate: {
+          type: Date,
+          default: null,
+        },
+      }
     ],
-    currentItem: {
-      type:[mongoose.Schema.Types.ObjectId] ,
+    
+    currentItem:[
+    {  type: mongoose.Schema.Types.ObjectId,
       ref: 'Asset',
-      default: null,
-    },
+      default: null,}
+    ] 
+   
+    
   },
   {
-    timestamps:true
+    timestamps: true
   }
 );
 

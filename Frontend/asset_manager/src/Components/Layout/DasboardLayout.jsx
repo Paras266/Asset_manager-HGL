@@ -6,9 +6,9 @@ import {Footer} from './Footer';
 export const DashboardLayout = () => (
   <div className="flex min-h-screen flex-col">
     <Header />
-    <div className="flex flex-1">
+    <div className="flex flex-1 ">
       <Sidebar />
-      <main className="flex-1 bg-gray-50 p-4 overflow-scroll">
+      <main className="flex-1 h-140 bg-gray-50 p-4 overflow-scroll">
         <Outlet />
       </main>
     </div>

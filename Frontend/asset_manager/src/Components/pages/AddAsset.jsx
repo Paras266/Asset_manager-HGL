@@ -67,19 +67,19 @@ export const AddAsset = () => {
       <h2 className="text-2xl font-bold text-blue-700 mb-6">Add New Asset</h2>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         {[
-          { label: "Device Type", name: "deviceType", type: "select", options: ["Laptop", "PC", "Mouse", "Keyboard", "Monitor", "Printer","Networking" , "Other"] },
+          { label: "Device Type", name: "deviceType", type: "select", options: ['Laptop', 'Desktop System', 'Monitor', 'Printer', 'UPS' ,'Storage Devices' , 'Server','Networking Devices', 'Wireless Mouse', 'Keyboard and Mouse' ,'Other'] },
           { label: "OS Key", name: "OsKey" },
           { label: "Office Key", name: "OfficeKey" },
           { label: "Model Number", name: "modelNumber" },
           { label: "Part Number", name: "partNumber" },
           { label: "Serial Number", name: "serialNumber" },
-          { label: "Express Service Code", name: "express_serviceCode" },
+          { label: "Express Service Code", name: "express_serviceCode" }, 
           { label: "RAM", name: "ram" },
           { label: "Processor", name: "processor" },
-          { label: "Storage Type", name: "storageType", type: "select", options: ["SATA", "SSD", "HDD", "NVMe"] },
+          { label: "Storage Type", name: "storageType", type: "select", options: ["SATA", "SSD", "HDD", "NVMe" , "None"] },
           { label: "Storage Capacity", name: "storageCapacity" },
           { label: "Device Name", name: "deviceName" },
-          { label: "IP Assignment", name: "ipAssignment", type: "select", options: ["Manual", "DHCP"] },
+          { label: "IP Assignment", name: "ipAssignment", type: "select", options: ["Manual", "DHCP" , "None"] },
           { label: "IP Address", name: "ipAddress" },
           { label: "LAN MAC Address", name: "lanMacAddress" },
           { label: "WiFi MAC Address", name: "wifiMacAddress" },

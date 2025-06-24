@@ -1,6 +1,6 @@
 // src/components/layout/Sidebar.jsx
 import { Link, useNavigate } from "react-router-dom";
-import { FaUserCircle, FaSignOutAlt, FaHome } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaHome , FaFileUpload } from "react-icons/fa";
 import api from "../../services/api.js"; // Adjust the import path as necessary
 
 export const Sidebar = () => {
@@ -41,6 +41,15 @@ export const Sidebar = () => {
         >
           <FaUserCircle size={20} />
           <span>View Profile</span>
+        </Link>
+
+        <Link
+          to="/dashboard/upload"
+          className="flex items-center gap-3 hover:bg-blue-600 p-2 rounded"
+        >
+          <FaFileUpload size={20} />
+
+          <span>Uplod File</span>
         </Link>
 
         {/* Logout */}

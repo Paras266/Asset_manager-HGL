@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { FaUserPlus, FaPlusCircle, FaUserCircle } from "react-icons/fa";
 
 export const Header = () => (
-  <header className="bg-white/95 shadow-lg border-b border-gray-200 px-4 py-3 flex flex-wrap justify-between items-center backdrop-blur-md z-50">
+  <header className="bg-white/95 shadow-lg border-b border-gray-200 px-5 py-4 flex flex-wrap justify-between items-center backdrop-blur-md z-50">
     {/* Logo + Project Name */}
     <Link to="/dashboard" className="flex items-center gap-2 group">
       <img
@@ -15,30 +16,26 @@ export const Header = () => (
     </Link>
 
     {/* Navigation Links */}
-    <nav className="flex flex-wrap gap-4 sm:gap-6 items-center text-blue-600 text-sm sm:text-md font-semibold mt-3 sm:mt-0">
+    <nav className="flex flex-wrap gap-4 sm:gap-6 items-center mt-3 sm:mt-0">
+      {/* Add User */}
       <Link
         to="/dashboard/add-user"
-        className="flex items-center gap-1 hover:text-green-600 transition-colors duration-200"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-blue-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200"
       >
-        <i className="fa fa-user-plus"></i>
-        <span>Add User</span>
+        <FaUserPlus className="text-md" />
+        <span className="text-sm font-semibold">Add User</span>
       </Link>
 
+      {/* Add Asset */}
       <Link
         to="/dashboard/add-asset"
-        className="flex items-center gap-1 hover:text-green-600 transition-colors duration-200"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-blue-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200"
       >
-        <i className="fa fa-plus-circle"></i>
-        <span>Add Asset</span>
+        <FaPlusCircle className="text-md" />
+        <span className="text-sm font-semibold">Add Asset</span>
       </Link>
 
-      <Link
-        to="/profile/me"
-        className="text-xl hover:text-green-600 transition-colors duration-200"
-        title="My Profile"
-      >
-        <i className="fa fa-user-circle"></i>
-      </Link>
+    
     </nav>
   </header>
 );

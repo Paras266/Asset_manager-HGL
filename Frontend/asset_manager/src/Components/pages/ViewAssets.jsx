@@ -1,11 +1,11 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import api from "../../services/api";
 import { toast } from "react-hot-toast";
 import * as XLSX from "xlsx";
 
-const DEVICE_TYPES = [
-  "Laptop", "PC", "Mouse", "Keyboard", "Monitor", "Printer", "Networking", "Other"
-];
+
 
 const CONDITION_OPTIONS = ["New", "Good", "Fair", "Damaged", "Repaired"];
 const STORAGE_TYPES = ["SATA", "SSD", "HDD", "NVMe"];
@@ -29,6 +29,9 @@ export const ViewAssets = () => {
     "capexNumber", "deviceCondition", "mouseSerialNumber", "keyboardSerialNumber",
     "monitorScreenSize", "monitorSerialNumber", "osKey", "officeKey", "status"
   ];
+
+  const DEVICE_TYPES = [...new Set(allAssets.map((asset) => asset.deviceType))];
+
 
   useEffect(() => {
     fetchAssets();
@@ -258,7 +261,7 @@ export const ViewAssets = () => {
 
       <div className="border-t pt-6 mt-10">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-blue-700">All Assets (Sorted by Device Type)</h1>
+          <h1 className="text-2xl font-bold text-blue-700">All Assets ({allAssets.length})</h1>
           <button onClick={exportToExcel} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
             Export All
           </button>

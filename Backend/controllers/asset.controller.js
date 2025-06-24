@@ -1,6 +1,9 @@
 import Asset from '../models/asset.model.js';
+import { sendMail } from '../utils/sendMail.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import User from '../models/user.model.js';
+import XLSX from "xlsx";
+import fs from "fs";
 
 // ✅ Add Asset
 export const addAsset = async (req, res, next) => {
@@ -36,8 +39,6 @@ export const getAllAssets = async (req, res, next) => {
       .populate('allocatedTo', 'username email department designation')
       .populate('allocationHistory', 'username email department designation');
 
-      console.log('Fetched assets:', assets);
-      
     res.status(200).json({
       success: true,
       count: assets.length,
@@ -45,7 +46,7 @@ export const getAllAssets = async (req, res, next) => {
     });
   } catch (error) {
     console.log('Error fetching assets:', error);
-        next(error);
+    next(error);
   }
 };
 
@@ -59,16 +60,16 @@ export const getAssetBySerialNumber = async (req, res, next) => {
     }
 
     const asset = await Asset.findOne({ serialNumber })
-    .populate('allocatedTo', 'username email designation')
-  .populate({
-    path: 'allocationHistory.user',
-    select: 'username email designation',
-  });
+      .populate('allocatedTo', 'username email designation')
+      .populate({
+        path: 'allocationHistory.user',
+        select: 'username email designation',
+      });
 
     if (!asset) {
       return next(new ErrorHandler('Asset not found', 404));
     }
- 
+
 
     res.status(200).json({
       success: true,
@@ -77,7 +78,7 @@ export const getAssetBySerialNumber = async (req, res, next) => {
     });
   } catch (error) {
     console.log('Error fetching asset by serial number:', error);
-    
+
     next(error);
   }
 };
@@ -101,7 +102,7 @@ export const getAllocatedAssets = async (req, res, next) => {
   try {
     const assets = await Asset.find({ status: 'allocated' }).populate(
       'allocatedTo',
-      'username email department'
+      'username email department contactNumber designation employeeCode'
     );
 
     if (assets.length === 0) {
@@ -215,6 +216,25 @@ export const deallocateAsset = async (req, res, next) => {
     asset.status = "available";
     await asset.save();
 
+    const subject = "Asset Deallocation Notification - Haldyn Glass";
+    const text = `Dear ${user.username},
+
+An asset has been deallocated successfully .
+
+Details:
+- Device Name: ${asset.deviceName}
+- Serial Number: ${asset.serialNumber}
+- Model Number: ${asset.modelNumber}
+- Deallocate On: ${deallocationDate.toLocaleDateString()}
+
+Please ensure the asset is as it was time of allocation . If anything found we will contact you.
+
+Regards,
+Haldyn Glass IT Team
+`;
+
+    await sendMail(user.email, subject, text);
+
     res.status(200).json({
       success: true,
       message: "Asset deallocated successfully",
@@ -268,6 +288,25 @@ export const allocateAsset = async (req, res, next) => {
       deallocatedDate: null,
     });
     await user.save();
+
+    const subject = "Asset Allocation Notification - Haldyn Glass";
+    const text = `Dear ${user.username},
+
+An asset has been successfully assigned to you.
+
+Details:
+- Device Name: ${asset.deviceName}
+- Serial Number: ${asset.serialNumber}
+- Model Number: ${asset.modelNumber}
+- Assigned On: ${allocationDate.toLocaleDateString()}
+
+Please ensure the asset is used responsibly. Contact the IT department for any issues or clarifications.
+
+Regards,
+Haldyn Glass IT Team
+`;
+
+    await sendMail(user.email, subject, text);
 
     res.status(200).json({ message: "Asset allocated successfully" });
   } catch (error) {

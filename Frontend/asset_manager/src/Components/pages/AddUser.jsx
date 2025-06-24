@@ -59,7 +59,7 @@ export const AddUser = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 max-h-screen overflow-y-auto">
+    <div className="p-4 md:p-8 max-h-screen ">
       <h2 className="text-2xl font-bold text-blue-700 mb-6">Add New User</h2>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         {[{ label: "Name", name: "username" },

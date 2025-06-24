@@ -5,20 +5,20 @@ const assetSchema = new mongoose.Schema(
     deviceType: {
       type: String,
       required: true,
-      enum: ['Laptop', 'PC', 'Mouse', 'Keyboard', 'Monitor', 'Printer', 'Networking','Other'],
+      enum: ['Laptop', 'Desktop System', 'Monitor', 'Printer',  'UPS' ,'Storage Devices' , 'Server','Networking Devices', 'Wireless Mouse', 'Keyboard and Mouse' ,'Other'],
     },
     OsKey: {
       type: String,
       trim: true,
       match: [/^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$/, 'Invalid OS Key format'],
-      required: true,
+ 
     },
     
     OfficeKey: {
       type: String,
       trim: true,
       match: [/^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$/, 'Invalid Office Key format'],
-      required: true,
+      
     },
     modelNumber: {
       type: String,
@@ -49,7 +49,7 @@ const assetSchema = new mongoose.Schema(
     },
     storageType: {
       type: String,
-      enum: ['SATA', 'SSD', 'HDD', 'NVMe'],
+      enum: ['SATA', 'SSD', 'HDD', 'NVMe' , 'None'],
       trim: true,
     },
     storageCapacity: {
@@ -62,7 +62,7 @@ const assetSchema = new mongoose.Schema(
     },
     ipAssignment: {
       type: String,
-      enum: ['Manual', 'DHCP'],
+      enum: ['Manual', 'DHCP' , 'None'],
       trim: true,
     },
     ipAddress: {

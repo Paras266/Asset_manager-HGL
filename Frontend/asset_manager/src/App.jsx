@@ -19,6 +19,7 @@ import {GetUserByCode} from "./Components/pages/GetUserByCode";
 import { AllocatedAssets } from "./Components/pages/AllocatedAsset";
 import { AvailableAssets } from "./Components/pages/AvailableAsset";
 import { GetAssetBySr } from "./Components/pages/GetAssetBySr";
+import { ExcelUpload } from "./Components/pages/Upload";
 import "./App.css";
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
         <Route path="allocated" element={<AllocatedAssets />} />
         <Route path="available" element={<AvailableAssets />} />
         <Route path="search-by-serial" element={<GetAssetBySr />} />
+        <Route path="upload" element={<ExcelUpload />} />
       </Route>
         </Routes>
      

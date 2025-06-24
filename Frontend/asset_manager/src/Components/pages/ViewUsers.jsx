@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { FaEdit, FaSave } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import * as XLSX from "xlsx";
-import api from "../../Services/api";
-
+import api from "../../services/api";
+// Ensure consistent import casing
 export const ViewUsers = () => {
   const [users, setUsers] = useState([]);
   const [editableRow, setEditableRow] = useState(null);
@@ -117,6 +117,15 @@ export const ViewUsers = () => {
     toast.success("Exported to Excel");
   };
 
+  const departmentOptions = [
+    "IT", "HR", "Finance", "Production", "Planing", "Manufacture", "Design", "Quality"
+  ];
+  
+  const designationOptions = [
+    "Manager", "Engineer", "Technician", "Intern", "Executive", "GET"
+  ];
+  
+
   return (
     <div className="p-4 w-full h-full">
       <div className="flex justify-between items-center mb-4">
@@ -174,19 +183,44 @@ export const ViewUsers = () => {
                   "reportingPerson",
                 ].map((key) => (
                   <td key={key} className="px-3 py-2">
-                    {editableRow === user._id ? (
-                      <input
-                        value={editedData[key] || ""}
-                        onChange={(e) => handleInputChange(e, key)}
-                        type={["dateOfJoining", "dateOfBirth"].includes(key) ? "date" : "text"}
-                        className="border p-1 w-full"
-                      />
-                    ) : key === "dateOfJoining" || key === "dateOfBirth" ? (
-                      user[key]?.split("T")[0]
-                    ) : (
-                      user[key]
-                    )}
-                  </td>
+  {editableRow === user._id ? (
+    key === "department" ? (
+      <select
+        value={editedData[key]}
+        onChange={(e) => handleInputChange(e, key)}
+        className="border p-1 w-full"
+      >
+        <option value="">Select Department</option>
+        {departmentOptions.map((dept) => (
+          <option key={dept} value={dept}>{dept}</option>
+        ))}
+      </select>
+    ) : key === "designation" ? (
+      <select
+        value={editedData[key]}
+        onChange={(e) => handleInputChange(e, key)}
+        className="border p-1 w-full"
+      >
+        <option value="">Select Designation</option>
+        {designationOptions.map((role) => (
+          <option key={role} value={role}>{role}</option>
+        ))}
+      </select>
+    ) : (
+      <input
+        value={editedData[key] || ""}
+        onChange={(e) => handleInputChange(e, key)}
+        type={["dateOfJoining", "dateOfBirth"].includes(key) ? "date" : "text"}
+        className="border p-1 w-full"
+      />
+    )
+  ) : key === "dateOfJoining" || key === "dateOfBirth" ? (
+    user[key]?.split("T")[0]
+  ) : (
+    user[key]
+  )}
+</td>
+
                 ))}
 
                 {/* Current Assets Display */}

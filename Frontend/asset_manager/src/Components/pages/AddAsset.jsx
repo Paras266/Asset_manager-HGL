@@ -47,17 +47,16 @@ export const AddAsset = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {    
     e.preventDefault();
     try {
       
       const res = await api.post("/assets/add", form);
-      
-      
       toast.success("Asset added successfully");
       setForm(initialState);
     } catch (error) {
-      toast.error("Failed to add asset");
+      
+      toast.error("Failed to add asset , please check all the details");
       console.error("faield" , error);
     }
   };

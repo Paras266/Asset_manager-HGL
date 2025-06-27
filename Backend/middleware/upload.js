@@ -8,6 +8,7 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
+
 const storage = multer.memoryStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -17,7 +18,7 @@ const storage = multer.memoryStorage({
     cb(null, uniqueSuffix + path.extname(file.originalname));
   },
 });
-
+   
 export const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // optional

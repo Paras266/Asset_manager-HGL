@@ -2,7 +2,8 @@ import { useState } from "react";
 import api from "../../Services/api.js";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FiEye, FiEyeOff, FiUser, FiMail, FiKey, FiLock } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiUser, FiMail, FiKey, FiLock, FiImage } from "react-icons/fi";
+
 
 export const Registraion = () => {
   const [form, setForm] = useState({
@@ -10,13 +11,14 @@ export const Registraion = () => {
     email: "",
     password: "",
     role: "admin",
-    headCode: ""
+    headCode: "" ,
   });
 
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showCode, setShowCode] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -26,11 +28,22 @@ export const Registraion = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     try {
-      const res = await api.post("admin/register", form);
+      const formData = new FormData();
+      for (const key in form) {
+        formData.append(key, form[key]);
+      }
+      if (profileImage) {
+        formData.append("file", profileImage);
+      }
+
+      const res = await api.post("admin/register", formData);
+      console.log(res.data);
+      
       if (res.data.success) {
-        toast.success(`Congratulations ${form.username}! , you have successfully registered as ${form.role}`);
-        setSuccess("Registration successful! Redirecting to login...");
+        toast.success(`Welcome ${form.username}! Registered as ${form.role}`);
+        setSuccess("Redirecting to login...");
         setTimeout(() => navigate("/login"), 2000);
       } else {
         setError(res.data.message || "Registration failed");
@@ -57,7 +70,7 @@ export const Registraion = () => {
               value={form.username}
               onChange={handleChange}
               required
-              className="pl-10 border border-blue-200 p-3 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="pl-10 border border-blue-200 p-3 rounded-xl w-full"
             />
           </div>
 
@@ -71,7 +84,7 @@ export const Registraion = () => {
               value={form.email}
               onChange={handleChange}
               required
-              className="pl-10 border border-blue-200 p-3 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="pl-10 border border-blue-200 p-3 rounded-xl w-full"
             />
           </div>
 
@@ -85,60 +98,58 @@ export const Registraion = () => {
               value={form.password}
               onChange={handleChange}
               required
-              className="pl-10 pr-10 border border-blue-200 p-3 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="pl-10 pr-10 border border-blue-200 p-3 rounded-xl w-full"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3.5 text-gray-600"
-            >
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5">
               {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
             </button>
           </div>
 
-          {/* Role Selection */}
+          {/* Role */}
           <select
             name="role"
             value={form.role}
             onChange={handleChange}
-            className="border border-blue-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="border border-blue-200 p-3 rounded-xl"
           >
             <option value="admin">Admin</option>
             <option value="head-admin">Head Admin</option>
           </select>
 
-          {/* Head Code (only for head-admin) */}
+          {/* Head Code */}
           {form.role === "head-admin" && (
             <div className="relative">
               <FiLock className="absolute top-3.5 left-3 text-gray-500" />
               <input
                 type={showCode ? "text" : "password"}
                 name="headCode"
-                placeholder="Enter head-admin code"
+                placeholder="Enter Head Admin Code"
                 value={form.headCode}
                 onChange={handleChange}
                 required
-                className="pl-10 pr-10 border border-green-300 p-3 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="pl-10 pr-10 border border-green-300 p-3 rounded-xl w-full"
               />
-              <button
-                type="button"
-                onClick={() => setShowCode(!showCode)}
-                className="absolute right-3 top-3.5 text-gray-600"
-              >
+              <button type="button" onClick={() => setShowCode(!showCode)} className="absolute right-3 top-3.5">
                 {showCode ? <FiEyeOff size={20} /> : <FiEye size={20} />}
               </button>
             </div>
           )}
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold shadow-md transition-all duration-300"
-          >
+          {/* Profile Image */}
+          <div className="relative">
+            <FiImage className="absolute top-3.5 left-3 text-gray-500" />
+            <input
+              type="file"
+              name="file"
+              onChange={(e) => setProfileImage(e.target.files[0])}
+              className="pl-10 border border-blue-200 p-3 rounded-xl w-full"
+            />
+          </div>
+
+          <button type="submit" className="bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl">
             Register
           </button>
 
-          {/* Go to Login Button */}
           <button
             type="button"
             onClick={() => navigate("/")}
@@ -147,7 +158,6 @@ export const Registraion = () => {
             Already have an account? Go to Login
           </button>
 
-          {/* Error / Success Messages */}
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           {success && <p className="text-green-700 text-sm text-center">{success}</p>}
         </form>

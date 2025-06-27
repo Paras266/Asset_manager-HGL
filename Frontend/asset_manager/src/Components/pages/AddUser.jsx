@@ -83,6 +83,7 @@ export const AddUser = () => {
               onChange={handleChange}
               className="border border-gray-300 p-2 rounded"
             />
+
           </div>
         ))}
 
@@ -134,6 +135,7 @@ export const AddUser = () => {
         </div>
 
         <div className="md:col-span-2">
+
           <button type="submit" className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 transition">
             Add User & Assign Asset
           </button>
@@ -142,3 +144,5 @@ export const AddUser = () => {
     </div>
   );
 };
+
+

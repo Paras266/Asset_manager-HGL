@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { urlencoded } from 'express';
 import adminRouter from './router/admin.router.js';
 import assetrouter from './router/asset.router.js';
 import userRouter from './router/user.router.js';
@@ -9,9 +9,9 @@ import cors from 'cors';
 
 const app = express();
 
-
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
+app.use(express.urlencoded({extended:false}))
 app.use(cookieParser());// enable cookie parsing
 
 // Routes

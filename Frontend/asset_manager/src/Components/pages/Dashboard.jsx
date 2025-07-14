@@ -8,19 +8,33 @@ export const Dashboard = () => {
   const [assets, setAssets] = useState([]);
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const fetchAssets = async () => {
       try {
+        
+            const checkAuth = async () => {
+                  try {
+                    await api.get("admin/auth/me", { withCredentials: true }); // ✅ use credentials
+                  } catch (error) {
+                    
+                    toast.error("You must be logged in to access this page");
+                    navigate("/login");
+                  }
+                };
+            
+                checkAuth();
+        
         const res = await api.get("/assets/getAssets");
         setAssets(res.data.assets || []);
       } catch (err) {
-        toast.error("Failed to load assets");
-        console.error(err);
+        const message = err.response?.data?.message || "Failed to Load Assets";
+        toast.error(message);
       }
     };
 
     fetchAssets();
-  }, []);
+  }, [navigate]);
 
   const totalAssets = assets.length;
   
@@ -102,6 +116,12 @@ const availableAssets = availableAssetsList.length;
         >
           Get User by Employee Code
         </button>
+           <button
+          onClick={() => navigate("asset-report")}
+          className="bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg shadow-md transition"
+        >
+          Download Assets Allocation Report
+            </button>
       </div>
     </div>
   );

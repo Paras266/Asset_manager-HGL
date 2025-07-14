@@ -12,10 +12,9 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, 'Email is required'],
       trim: true,
       lowercase: true,
-      unique: true,
+     
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         'Please enter a valid email address',
@@ -24,7 +23,35 @@ const userSchema = new mongoose.Schema(
     department: {
       type: String,
       required: true,
-      enum: ['IT', 'HR', 'Finance', 'Production', 'Planing', 'Manufacture', 'Design', 'Quality'], // update as per your dropdown options
+      enum:  [
+  "Engineering Services",
+  "Workshop",
+  "Glass",
+  "Production 3",
+  "Operations",
+  "Warehouse",
+  "Quality 3",
+  "Quality",
+  "Production 4",
+  "Stores",
+  "Design",
+  "Accounts",
+  "I S Maintenance",
+  "IT",
+  "MRS",
+  "Foundry",
+  "Administration",
+  "Quality 4",
+  "PPC & NPD",
+  "Improvement Cell",
+  "Human Resources",
+  "Exports",
+  "Purchase",
+  "Logistics",
+  "Sales",
+  "Costing & MIS",
+  "Safety"
+], // update as per your dropdown options
     },
     employeeCode: {
       type: String,
@@ -36,9 +63,58 @@ const userSchema = new mongoose.Schema(
     designation: {
       type: String,
       required: true,
-      enum: ['Manager', 'Engineer', 'Technician', 'Intern', 'Executive', 'GET'], // predefined roles
+      enum: [
+  "Sr. Electrician",
+  "Assistant Manager",
+  "Asst. Manager",
+  "Sr. Supervisor",
+  "Officer",
+  "Sr. Officer",
+  "Jr. Officer",
+  "Jr. Supervisor",
+  "Sr. Assistant",
+  "Operator",
+  "Deputy Manager",
+  "Supervisor",
+  "Asst Manager",
+  "Sr.Technician",
+  "Assistant",
+  "C.N.C Operator",
+  "Technical Assistant",
+  "Lab Assistant",
+  "Trainee",
+  "Timekeeper",
+  "Manager",
+  "Worker Trainee",
+  "Senior Manager - (Electrical)",
+  "General Manager-Group Engg Head",
+  "Asst General Manager",
+  "Timekeepar",
+  "Asst Mgr",
+  "Senior Manager",
+  "Executive",
+  "General Manager",
+  "Asst.Supervisor",
+  "Sr.Exective",
+  "Sr Manager",
+  "Sr.Executive",
+  "Asst Operator",
+  "Sr Executive",
+  "Sr. Manager",
+  "GET",
+  "Time Keeper Trainee",
+  "Shift Supervisor",
+  "CNC Supervisor",
+  "Jr.Supervisor",
+  "Jr. Executive",
+  "Mentor",
+  "DGM",
+  "Management Trainee",
+  "Technician"
+]
+, // predefined roles
     },
-    roleInCompany: {
+    companyRole: {
       type: String,
       trim: true,
     },
@@ -52,7 +128,6 @@ const userSchema = new mongoose.Schema(
     },
     location: {
       type: String,
-      required: true,
       trim: true,
     },
 
@@ -60,18 +135,17 @@ const userSchema = new mongoose.Schema(
     permanentAddress
       : {
       type: String,
-      required: true,
+      
       trim: true,
     },
     presentAddress: {
       type: String,
-      required: true,
+    
       trim: true,
 
     },
     contactNumber: {
       type: Number,
-      required: true,
       match: [/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number'],
     },
     reportingPerson: {

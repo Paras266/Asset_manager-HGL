@@ -14,6 +14,9 @@ adminRouter.post('/login', loginAdmin);
 adminRouter.get('/logout',logoutAdmin) ;
 //Router to view profile
 adminRouter.get('/profile',isProtected,getAdminProfile)
-
+// return authenticated user
+adminRouter.get("/auth/me", isProtected , (req, res) => {
+  res.status(200).json({ success: true, user: req.user }); 
+});
 // Export the admin router
 export default adminRouter;

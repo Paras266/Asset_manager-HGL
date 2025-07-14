@@ -42,14 +42,14 @@ export const Registraion = () => {
       console.log(res.data);
       
       if (res.data.success) {
-        toast.success(`Welcome ${form.username}! Registered as ${form.role}`);
+        toast.success(res.data.message || `Registration successful as ${res.data.admin.role}`);
         setSuccess("Redirecting to login...");
         setTimeout(() => navigate("/login"), 2000);
       } else {
-        setError(res.data.message || "Registration failed");
+         setError(res.data.message || "Registration failed");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      toast.error(err.response?.data?.message);
     }
   };
 
@@ -152,7 +152,7 @@ export const Registraion = () => {
 
           <button
             type="button"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/login")}
             className="text-blue-700 hover:underline text-sm font-medium text-center"
           >
             Already have an account? Go to Login

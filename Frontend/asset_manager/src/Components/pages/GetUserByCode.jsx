@@ -10,7 +10,8 @@ export const GetUserByCode = () => {
   const [availableAssets, setAvailableAssets] = useState([]);
   const [selectedAssetId, setSelectedAssetId] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [allocating, setallocating] = useState(false)
+  const [deallocating, setdeallocating] = useState(false)
   const handleFetch = async () => {
     if (!employeeCode.trim()) return toast.error("Enter employee code");
     setLoading(true);
@@ -20,7 +21,8 @@ export const GetUserByCode = () => {
       setAssets(res.data.asset);
       fetchAvailableAssets(); // fetch available assets
     } catch (error) {
-      toast.error("User not found");
+      const message = error.response?.data?.message || "Failed to fetch user";
+      toast.error(message);
       setUserData(null);
     } finally {
       setLoading(false);
@@ -50,31 +52,45 @@ export const GetUserByCode = () => {
 
   const handleDeallocate = async (assetId) => {
     try {
-      await api.put("/assets/deallocate", {
+      setdeallocating(true);
+    const res =  await api.put("/assets/deallocate", {
         userId: userData._id,
         assetId,
       });
-      toast.success("Asset deallocated");
+      toast.success(res.data.message || "Asset deallocated successfully");
       handleFetch();
-    } catch {
-      toast.error("Failed to deallocate asset");
+    } catch(err) {
+      toast.error(err.response?.data?.message || "Deallocation failed");
+    }finally{
+      setdeallocating(false);
     }
   };
 
   const handleAllocate = async () => {
     if (!selectedAssetId) return toast.error("Select an asset to allocate");
-     console.log("Selected asset ID:", selectedAssetId ,  "User ID:", userData._id);
-     
+
+      setallocating(true);
+      console.log(allocating);
+
     try {
-      await api.put("/assets/allocate", {
+    const res =  await api.put("/assets/allocate", {
         userId: userData._id,
         assetId: selectedAssetId,
       });
-      toast.success("Asset allocated successfully");
+      console.log("allocated");
+      
+      toast.success( res.data.message || "Asset allocated successfully");
       setSelectedAssetId("");
       handleFetch();
-    } catch {
-      toast.error("Failed to allocate asset");
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to allocate asset";
+      toast.error(message);
+    }finally{
+      console.log("finally");
+      
+      console.log(allocating);
+      
+      setallocating(false);
     }
   };
 
@@ -219,9 +235,10 @@ export const GetUserByCode = () => {
                   </p>
                   <button
                     onClick={() => handleDeallocate(asset._id)}
+                    disabled={deallocating}
                     className="mt-2 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
                   >
-                    Deallocate
+                    {deallocating ? "Deallocating..." : "Deallocate Asset"}
                   </button>
                 </div>
               ))
@@ -250,9 +267,10 @@ export const GetUserByCode = () => {
               </select>
               <button
                 onClick={handleAllocate}
+                disabled={allocating}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
-                Allocate
+                 {allocating ? "Allocating..." : "Allocate Asset"}
               </button>
             </div>
           </div>

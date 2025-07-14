@@ -8,8 +8,8 @@ const cloudinaryUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (![".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
-      return cb(new Error("Only image files allowed"), false);
+    if (![".jpg", ".jpeg", ".png", ".webp" , ".pdf"].includes(ext)) {
+      return cb(new Error("Only image and pdf files allowed"), false);
     }
     cb(null, true);
   },

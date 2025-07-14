@@ -1,29 +1,45 @@
 import { useEffect, useState } from "react";
 import { FaUserCircle, FaEnvelope, FaShieldAlt } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api"; // Adjust the import path as necessary
 import axios from "axios";
 
 export const AdminProfile = () => {
   const [admin, setadmin] = useState(null);
   console.log(admin);
-
+  const navigate = useNavigate();
   useEffect(() => {
-    const fetchProfile = async () => {
+
+
+    const checkAuth = async () => {
+        try {
+          await api.get("admin/auth/me", { withCredentials: true }); // ✅ use credentials
+        } catch (error) {
+          console.log("in uplaod page : " ,error);
+          
+          toast.error("You must be logged in to access this page");
+          navigate("/login");
+        }
+      };
+  
+   const fetchProfile = async () => {
+      
       try {
         const res = await axios.get("http://localhost:4000/api/admin/profile", {
           withCredentials: true,
         });
-        console.log(res.data);
 
         setadmin(res.data.data);
       } catch (error) {
-        toast.error("Failed to load profile data");
-        console.error(error);
+        const message = error.response?.data?.message || "Failed to fetch peofile data";
+        toast.error(message);
       }
     };
-
+    checkAuth();
     fetchProfile();
-  }, []);
+
+  }, [navigate]);
 
   if (!admin) {
     return (

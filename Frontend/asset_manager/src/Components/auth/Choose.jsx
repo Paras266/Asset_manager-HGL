@@ -18,7 +18,7 @@ export const Choose = () => {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden bg-gradient-to-br from-white via-blue-50 to-green-100 flex items-center justify-center relative">
+    <div className="w-screen h-screen overflow-hidden bg-gradient-to-br from-white via-blue-100 to-green-200 flex items-center justify-center relative">
       {/* Toast container */}
       <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
 

@@ -26,13 +26,14 @@ const CodeVerify = ({ onClose }) => {
       }
     } catch (err) {
       // Optionally extract backend error message if exists
-      const message = err.response?.data?.message || "Invalid code";
+      const message = err.response?.data?.message || "Something went wrong";
+      console.log("error in verifying code", err);
       toast.error(message);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-gradient-to-br from-white via-blue-100 to-green-200 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl p-8 shadow-lg max-w-sm w-full relative">
         <button
           className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
@@ -50,7 +51,6 @@ const CodeVerify = ({ onClose }) => {
               placeholder="Enter code"
               value={registrationcode}
               onChange={(e) => setregistraionCode(e.target.value)}
-              required
               className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-500 pr-10"
             />
             <button

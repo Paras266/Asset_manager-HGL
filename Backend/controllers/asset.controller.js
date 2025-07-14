@@ -1,21 +1,38 @@
 import Asset from '../models/asset.model.js';
 import { sendMail } from '../utils/sendMail.js';
-import { ErrorHandler } from '../utils/errorHandler.js';
+import { ApiError } from '../utils/ApiError.js';
 import User from '../models/user.model.js';
+import PDFDocument from 'pdfkit';
+import cloudinary from '../utils/cloudinary.js';
+import streamifier from 'streamifier';
+import moment from 'moment';
 import XLSX from "xlsx";
 import fs from "fs";
 
 // ✅ Add Asset
 export const addAsset = async (req, res, next) => {
   try {
-
     const assetData = req.body;
+
+    // List required fields
+    const requiredFields = [
+      "deviceType",
+      "serialNumber",
+      "modelNumber",
+      "status"
+    ];
+
+    for (const field of requiredFields) {
+      if (!assetData[field]) {
+        return next(new ApiError(`${field} is required`, 400));
+      }
+    }
 
 
     // Check for duplicate serial number
     const existingAsset = await Asset.findOne({ serialNumber: assetData.serialNumber });
     if (existingAsset) {
-      return next(new ErrorHandler('Asset with this serial number already exists', 400));
+      return next(new ApiError('Asset with this serial number already exists', 400));
     }
 
     const newAsset = await Asset.create(assetData);
@@ -37,7 +54,18 @@ export const getAllAssets = async (req, res, next) => {
   try {
     const assets = await Asset.find()
       .populate('allocatedTo', 'username email department designation')
-      .populate('allocationHistory', 'username email department designation');
+      .populate({
+        path: 'allocationHistory.user',
+        select: 'username email department designation',
+      })
+    if (assets.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No assets found',
+        assets: [],
+      });
+
+    }
 
     res.status(200).json({
       success: true,
@@ -56,7 +84,7 @@ export const getAssetBySerialNumber = async (req, res, next) => {
     const { serialNumber } = req.body;
 
     if (!serialNumber) {
-      return next(new ErrorHandler('Serial number is required', 400));
+      return next(new ApiError('Serial number is required', 400));
     }
 
     const asset = await Asset.findOne({ serialNumber })
@@ -67,7 +95,7 @@ export const getAssetBySerialNumber = async (req, res, next) => {
       });
 
     if (!asset) {
-      return next(new ErrorHandler('Asset not found', 404));
+      return next(new ApiError('Asset not found', 404));
     }
 
 
@@ -83,16 +111,40 @@ export const getAssetBySerialNumber = async (req, res, next) => {
   }
 };
 
+export const getassetById = async (req,res,next)=>{
+  try {
+       const {id} = req.params;
+       
+       if(!id){
+        return next(new ApiError("Asset ID is Required" , 400))
+       }
+       const asset = await Asset.findById(id)
+       
+       if(!asset){
+        return next(new ApiError("Asset not found" , 404))
+       }
+       res.status(200).json({
+        success:true,
+        asset
+       })
+
+
+  } catch (error) {
+    console.log("error while get asset by id",error);
+    next(error)
+  }
+}
 
 // controllers/assetController.js
 
 export const getAvailableAssets = async (req, res) => {
   try {
     const assets = await Asset.find({ status: "available" });
-    res.status(200).json({ data: assets });
+
+    res.status(200).json({ message: "Available assets fetched succesfully", data: assets });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to fetch assets" });
+    next(error)
   }
 };
 
@@ -171,6 +223,8 @@ export const getDamagedAssets = async (req, res, next) => {
     next(error);
   }
 };
+// ✅ till here done
+
 export const deallocateAsset = async (req, res, next) => {
   try {
     const { userId, assetId } = req.body;
@@ -179,7 +233,7 @@ export const deallocateAsset = async (req, res, next) => {
     const asset = await Asset.findById(assetId);
 
     if (!user || !asset) {
-      return next(new ErrorHandler("User or Asset not found", 404));
+      return next(new ApiError("User or Asset not found", 404));
     }
 
     const deallocationDate = new Date();
@@ -251,7 +305,7 @@ export const allocateAsset = async (req, res, next) => {
   const { userId, assetId } = req.body;
 
   if (!userId || !assetId) {
-    return res.status(400).json({ message: "User ID and Asset ID are required" });
+    return next(new ApiError("User ID and Asset ID are required", 400));
   }
 
   try {
@@ -259,11 +313,11 @@ export const allocateAsset = async (req, res, next) => {
     const user = await User.findById(userId);
 
     if (!asset || !user) {
-      return res.status(404).json({ message: "User or Asset not found" });
+      return next(new ApiError("User or Asset not found", 404));
     }
 
     if (asset.status === "allocated") {
-      return res.status(400).json({ message: "Asset is already allocated" });
+      return next(new ApiError("Asset is already allocated", 400));
     }
 
     const allocationDate = new Date();
@@ -311,7 +365,7 @@ Haldyn Glass IT Team
     res.status(200).json({ message: "Asset allocated successfully" });
   } catch (error) {
     console.error("Allocation error:", error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 };
 
@@ -342,6 +396,7 @@ export const updateAsset = async (req, res) => {
     if (!updatedAsset) {
       return res.status(404).json({ success: false, message: 'Asset not found' });
     }
+    
 
     res.json({ success: true, message: 'Asset updated successfully', data: updatedAsset });
   } catch (error) {
@@ -413,3 +468,136 @@ export const deleteAsset = async (req, res) => {
   }
 };
 
+
+export const getShortAllocationInfo = async (req, res, next) => {
+  try {
+    const { serialNumber } = req.params;
+
+    const asset = await Asset.findOne({ serialNumber }).populate('allocatedTo', 'username employeeCode designation department').populate({ path: 'allocationHistory.user', select: 'username employeeCode designation department' });
+
+    if (!asset) {
+      return next(new ApiError(404, 'Asset not found'));
+    }
+
+    res.status(200).json({
+      deviceName: asset.deviceName,
+      deviceType: asset.deviceType,
+      modelNumber: asset.modelNumber,
+      serialNumber: asset.serialNumber,
+      userhistory: asset.allocationHistory.map(entry => ({
+        user: entry.user ? {
+          username: entry.user.username,
+          employeeCode: entry.user.employeeCode,
+          designation: entry.user.designation,
+          department: entry.user.department
+        } : null,
+        allocatedDate: entry.allocatedDate,
+        deallocatedDate: entry.deallocatedDate
+      })),
+      status: asset.status,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const downloadAllocationPdf = async (req, res) => {
+  try {
+    const { serialNumber } = req.params;
+
+    // Fetch the asset and allocation history (you said this part is fine)
+    const asset = await Asset.findOne({ serialNumber }).populate('allocationHistory.user');
+
+    if (!asset) {
+      return res.status(404).json({ message: 'Asset not found' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${serialNumber}_report.pdf"`);
+
+    const doc = new PDFDocument({ margin: 30, size: 'A4' });
+
+    // Pipe it directly to response
+    doc.pipe(res);
+
+    doc.fontSize(16).text(`Asset Allocation Report`, { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(12).text(`Serial Number: ${asset.serialNumber}`);
+    doc.text(`Device Name: ${asset.deviceName}`);
+    doc.text(`Device Type: ${asset.deviceType}`);
+    doc.text(`Model Number: ${asset.modelNumber}`);
+    doc.text(`Status: ${asset.status}`);
+    doc.moveDown();
+
+    doc.fontSize(14).text(`Allocation History:`);
+    doc.moveDown();
+
+    asset.allocationHistory.forEach((entry, index) => {
+      const user = entry.user;
+      const employeeCode = user ? user.employeeCode : 'N/A';
+      const name = user ? user.username : 'Unknown';
+      const desig = user?.designation || '';
+      const dept = user?.department || '';
+
+      doc.fontSize(12).text(`${index + 1}. ${name} (${employeeCode}, ${desig}, ${dept})`);
+      doc.text(`   > Issued Date: ${new Date(entry.allocatedDate).toLocaleDateString()} ` +
+        `${entry.deallocatedDate ? 'Return Date: ' + new Date(entry.deallocatedDate).toLocaleDateString() : '(Currently Allocated)'}`);
+      doc.moveDown(0.5);
+    });
+
+    doc.end(); // Required!
+  } catch (error) {
+    console.error("PDF generation error:", error);
+    res.status(500).send('Something went wrong');
+  }
+};
+
+
+
+export const uploadInvoice = async (req, res, next) => {
+  const { assetId } = req.params;
+
+  if (!req.file) {
+    return next(new ApiError("No file uploaded", 400));
+  }
+
+  try {
+    // Upload using file path from diskStorage
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'invoices',
+      resource_type: 'raw',
+      type: 'upload',               // ensures it's stored as 'upload'
+      use_filename: true,
+      unique_filename: false,
+      // required for PDFs or other non-images
+        format: req.file.mimetype === 'application/pdf' ? 'pdf' : undefined,
+      access_mode: 'public',  // required for PDFs or other non-images
+    });
+
+    // Delete the file after upload to cloudinary
+    fs.unlinkSync(req.file.path);
+
+    // Update the asset with invoice URL
+    const updatedAsset = await Asset.findByIdAndUpdate(
+      assetId,
+      { invoice: result.secure_url },
+      { new: true }
+    );
+
+    if (!updatedAsset) {
+      return next(new ApiError("Asset not found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Invoice uploaded successfully",
+      invoiceUrl: result.secure_url,
+    });
+
+  } catch (err) {
+    console.error("Upload error:", err);
+    next(err);
+  }
+};
+
+// error : dont upload pdf

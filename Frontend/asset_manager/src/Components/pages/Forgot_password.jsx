@@ -29,8 +29,11 @@ export const ForgotPassword = () => {
     if (!code) return toast.error("Please enter the verification code");
     try {
       const res = await api.post("/auth/verify-code", { email, code });
-      toast.success(res.data.message || "Code verified");
-      setStep(3);
+      if (res.data.success === true){
+         toast.success(res.data.message || "Code verified");
+          setStep(3);
+     }
+      
     } catch (err) {
       toast.error(err.response?.data?.message || "Invalid code");
     }

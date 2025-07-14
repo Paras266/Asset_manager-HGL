@@ -7,7 +7,7 @@ export const Footer = () => {
       <div className="max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Logo and Intro */}
         <div className="flex flex-col items-start gap-3">
-          <img src="../../public/haldyn_logo.jpg" alt="Haldyn Glass Logo" className="h-10 object-contain" />
+          <img src="/haldyn_logo.jpg" alt="Haldyn Glass Logo" className="h-10 object-contain" />
           <p className="text-gray-600">
             <strong>Haldyn Glass Ltd</strong> 
           </p>

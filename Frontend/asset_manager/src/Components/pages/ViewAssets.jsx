@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import api from "../../services/api";
 import { toast } from "react-hot-toast";
 import * as XLSX from "xlsx";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -19,6 +20,8 @@ export const ViewAssets = () => {
   const [expandedTypes, setExpandedTypes] = useState({});
   const [editIndex, setEditIndex] = useState(null);
   const [editedAsset, setEditedAsset] = useState({});
+  const [searchSerial, setSearchSerial] = useState("");
+  const navigate = useNavigate();
 
   const editableFields = [
     "deviceType", "modelNumber", "partNumber", "serialNumber", "exportCode",
@@ -27,40 +30,63 @@ export const ViewAssets = () => {
     "vendorName", "vendorContactNumber", "vendorEmail", "invoiceNumber",
     "purchaseOrderNumber", "warrantyType", "warrantyPeriod", "deviceCost",
     "capexNumber", "deviceCondition", "mouseSerialNumber", "keyboardSerialNumber",
-    "monitorScreenSize", "monitorSerialNumber", "osKey", "officeKey", "status"
+    "monitorScreenSize", "monitorSerialNumber", "osKey", "officeKey",  "operatingSystem" , "officeApplication" ,"status"
   ];
 
   const DEVICE_TYPES = [...new Set(allAssets.map((asset) => asset.deviceType))];
 
 
   useEffect(() => {
-    fetchAssets();
-  }, []);
-
-  const fetchAssets = async () => {
-    try {
-      const res = await api.get("/assets/getAssets");
-      if (res.data.success) {
-        const sortedAssets = sortAssetsByType(res.data.assets);
-        setAllAssets(sortedAssets);
-  
-        if (selectedType) {
-          const filtered = res.data.assets.filter((a) => a.deviceType === selectedType);
-          setFilteredAssets(filtered);
-          setExpandedTypes({ [selectedType]: true });
-  
-          if (filtered.length === 0) {
-            toast.error(`No assets found for ${selectedType}`);
-          }
-        }
-      } else {
-        toast.error("No assets found");
+     const checkAuth = async () => {
+      try {
+        await api.get("admin/auth/me", { withCredentials: true }); // ✅ use credentials
+      } catch (error) {
+        console.log("in uplaod page : " ,error);
+        
+        toast.error("You must be logged in to access this page");
+        navigate("/login");
       }
-    } catch (error) {
-      console.error("Error fetching assets:", error);
-      toast.error("Failed to load assets");
+    };
+
+    checkAuth();
+    fetchAssets();
+  }, [navigate]);
+
+const fetchAssets = async () => {
+  try {
+    const res = await api.get("/assets/getAssets");
+    if (res.data.success) {
+      const sortedAssets = sortAssetsByType(res.data.assets);
+      setAllAssets(sortedAssets);
+
+      // Filter logic
+      let filtered = res.data.assets;
+      if (selectedType) {
+        filtered = filtered.filter(a => a.deviceType === selectedType);
+      }
+      if (searchSerial.trim()) {
+        filtered = filtered.filter(a =>
+          a.serialNumber?.toLowerCase().includes(searchSerial.toLowerCase())
+        );
+      }
+
+      setFilteredAssets(filtered);
+      if (selectedType || searchSerial.trim()) {
+        setExpandedTypes({ [selectedType || "Filtered"]: true });
+      }
+
+      if (filtered.length === 0) {
+        toast.error("No matching assets found.");
+      }
+    } else {
+      toast.error("No assets found");
     }
-  };
+  } catch (error) {
+    console.error("Error fetching assets:", error);
+    toast.error(error.response?.data?.message || "Error fetching assets");
+  }
+};
+
   
 
   const sortAssetsByType = (assets) => {
@@ -110,21 +136,118 @@ export const ViewAssets = () => {
     }
   };
 
-  const exportToExcel = () => {
-    const cleanData = allAssets.map(({ allocatedTo, previousUsers, __v, createdAt, updatedAt, ...a }) => a);
-    const worksheet = XLSX.utils.json_to_sheet(cleanData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "AllAssets");
-    XLSX.writeFile(workbook, "AllAssets.xlsx");
-  };
+const exportToExcel = () => {
+  let cleanData;
 
-  const exportToExcel2 = () => {
-    const cleanData = filteredAssets.map(({ allocatedTo, previousUsers, __v, createdAt, updatedAt, ...a }) => a);
-    const worksheet = XLSX.utils.json_to_sheet(cleanData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "FilteredAssets");
-    XLSX.writeFile(workbook, "FilteredAssets.xlsx");
-  };
+  if (allAssets.length === 0) {
+    cleanData = [{
+      deviceType: "",
+      osKey: "",
+      officeKey: "",
+      opratingSystem: "",
+      officeApplication: "",
+      modelNumber: "",
+      partNumber: "",
+      serialNumber: "",
+      express_serviceCode: "",
+      ram: "",
+      processor: "",
+      storageType: "",
+      storageCapacity: "",
+      deviceName: "",
+      ipAssignment: "",
+      ipAddress: "",
+      lanMacAddress: "",
+      wifiMacAddress: "",
+      vendorName: "",
+      vendorContactNumber: "",
+      vendorEmail: "",
+      vendorInvoiceNumber: "",
+      purchaseOrderNumber: "",
+      warrantyType: "",
+      warrantyPeriod: "",
+      deviceCost: "",
+      capexNumber: "",
+      deviceCondition: "",
+      mouseSerialNumber: "",
+      keyboardSerialNumber: "",
+      monitorScreenSize: "",
+      monitorSerialNumber: "",
+      otherDetails: "",
+      status: "",
+      issuedTo: "",
+      issuedDate: "",
+      userdesignation: "",
+      userdepartment: "" ,
+    }];
+  } else {
+    cleanData = allAssets.map((asset) => {
+      const {
+        _id, __v, createdAt, updatedAt, allocationHistory, allocatedTo, ...rest
+      } = asset;
+
+      // Safely extract user info
+      const issuedTo = allocatedTo?.username || "";
+      const userdesignation = allocatedTo?.designation || "";
+      const userdepartment = allocatedTo?.department || "";
+
+      // Get latest allocation date
+      let issuedDate = "";
+      if (asset.allocationHistory?.length > 0) {
+        const latest = asset.allocationHistory[asset.allocationHistory.length - 1];
+        issuedDate = latest?.allocatedDate
+          ? new Date(latest.allocatedDate).toLocaleDateString()
+          : "";
+      }
+
+      return {
+        ...rest,
+        issuedTo,
+        issuedDate,
+        userdesignation,
+        userdepartment
+      };
+    });
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(cleanData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "AllAssets");
+  XLSX.writeFile(workbook, "AllAssets.xlsx");
+};
+
+
+
+const exportToExcel2 = () => {
+  const cleanData = filteredAssets.map((asset) => {
+    const {
+      _id,
+      __v,
+      createdAt,
+      updatedAt,
+      allocationHistory,
+      allocatedTo,
+      ...rest
+    } = asset;
+
+    return {
+      ...rest,
+      issuedTo: allocatedTo?.username || '',
+      designation: allocatedTo?.designation || '',
+      department: allocatedTo?.department || '',
+      issuedDate:
+        asset.allocationHistory?.length > 0
+          ? new Date(asset.allocationHistory[asset.allocationHistory.length - 1].allocatedDate).toLocaleDateString()
+          : '',
+    };
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(cleanData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'FilteredAssets');
+  XLSX.writeFile(workbook, 'FilteredAssets.xlsx');
+};
+
 
   const toggleCollapse = (type) => {
     setExpandedTypes((prev) => ({ ...prev, [type]: !prev[type] }));
@@ -207,8 +330,10 @@ export const ViewAssets = () => {
                   <button onClick={handleSave} className="bg-blue-600 text-white px-2 py-1 rounded mr-2">Save</button>
                   <button onClick={handleCancel} className="bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
                 </>
-              ) : (
+              ) : ( <>
                 <button onClick={() => handleEdit(index, source)} className="bg-blue-600 text-white px-2 py-1 rounded">Edit</button>
+                <button onClick={() => navigate(`view-asset/${asset._id}`)} className="bg-green-600 text-white px-2 py-1 rounded ml-2"> View</button>
+                </>
               )}
             </td>
           </tr>
@@ -219,28 +344,41 @@ export const ViewAssets = () => {
 
   return (
     <div className="p-6 text-gray-800">
-      <div className="flex items-center gap-4 mb-6">
-        <select
-          className="border rounded px-4 py-2 text-gray-700"
-          value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
-        >
-          <option value="">Select Device Type</option>
-          {DEVICE_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+     <div className="flex items-center gap-4 mb-6">
+  <select
+    className="border rounded px-4 py-2 text-gray-700"
+    value={selectedType}
+    onChange={(e) => setSelectedType(e.target.value)}
+  >
+    <option value="">Select Device Type</option>
+    {DEVICE_TYPES.map((type) => (
+      <option key={type} value={type}>{type}</option>
+    ))}
+  </select>
 
-        <button onClick={fetchAssets} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Get Assets
-        </button>
+  <input
+    type="text"
+    placeholder="Enter Serial Number"
+    value={searchSerial}
+    onChange={(e) => setSearchSerial(e.target.value)}
+    className="border rounded px-4 py-2 text-gray-700 w-64"
+  />
 
-        <button onClick={exportToExcel2} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-          Export Filtered
-        </button>
-      </div>
+  <button
+    onClick={fetchAssets}
+    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+  >
+    Get Assets
+  </button>
+
+  <button
+    onClick={exportToExcel2}
+    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+  >
+    Export Filtered
+  </button>
+</div>
+
 
       {filteredAssets.length > 0 && selectedType && (
         <div className="mb-8 border border-gray-300 rounded">

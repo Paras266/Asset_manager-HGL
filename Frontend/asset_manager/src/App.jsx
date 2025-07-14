@@ -2,6 +2,8 @@
 import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Toaster, toast } from "react-hot-toast";
 import { RouterProvider, BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import {Choose} from "./Components/auth/choose";
@@ -20,6 +22,8 @@ import { AllocatedAssets } from "./Components/pages/AllocatedAsset";
 import { AvailableAssets } from "./Components/pages/AvailableAsset";
 import { GetAssetBySr } from "./Components/pages/GetAssetBySr";
 import { ExcelUpload } from "./Components/pages/Upload";
+import { AssetReport } from "./Components/pages/AssetReport";
+import { ViewSingleAsset } from "./Components/pages/ViewSingleAsset";
 import "./App.css";
 
 function App() {
@@ -41,6 +45,7 @@ function App() {
         color: '#721c24',
       },
     },
+    
   }}
 />
      
@@ -50,20 +55,33 @@ function App() {
         <Route path="/register" element={<Registraion />} />
         <Route path="/forgot-password" element={<ForgotPassword/>} />
         <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route index element={<Dashboard />} />
+      <Route index element={<Dashboard />} />
         <Route path="add-user" element={<AddUser />} />
-        <Route path="add-asset" element={<AddAsset />} />
+        <Route path="add-asset" element={<AddAsset />} />           
         <Route path="users" element={<ViewUsers />} />
-        <Route path="assets" element={<ViewAssets />} />
+        <Route path="assets" element={<ViewAssets />} /> 
         <Route path="profile" element={<AdminProfile />} />
         <Route path="userBycode" element={<GetUserByCode />} />
         <Route path="allocated" element={<AllocatedAssets />} />
         <Route path="available" element={<AvailableAssets />} />
         <Route path="search-by-serial" element={<GetAssetBySr />} />
         <Route path="upload" element={<ExcelUpload />} />
+        <Route path="asset-report" element={<AssetReport />} />
+        <Route path="assets/view-asset/:id" element={<ViewSingleAsset />} />
       </Route>
         </Routes>
-     
+     <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 }

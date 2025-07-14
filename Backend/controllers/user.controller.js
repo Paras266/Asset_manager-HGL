@@ -1,19 +1,35 @@
 import User from '../models/user.model.js';
 import Asset from '../models/asset.model.js';
-import { ErrorHandler } from '../utils/errorHandler.js';
+import { ApiError } from '../utils/ApiError.js';
 import { sendMail } from "../utils/sendMail.js"; // your mail utility
+import mongoose from 'mongoose';
 
+// ✅ handled errors
 export const addUser = async (req, res, next) => {
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+
   try {
-    const { assetId,  ...userData } = req.body;
-     const {email, employeeCode} = req.body  // here we destructer email and employeecode differetnly so we can dont lose data from userdata
+    const { assetId, ...userData } = req.body;
+
+
+    if (!userData) {
+      return next(new ApiError("No filled data found", 404))
+    }
+    const { email, employeeCode } = req.body  // here we destructer email and employeecode differetnly so we can dont lose data from userdata
     // ✅ Step 1: Check if user already exists by email or employeeCode
+
     const existingUser = await User.findOne({
       $or: [{ email }, { employeeCode }]
     });
+
     if (existingUser) {
-      return res.status(400).json({ message: "User with this email or employee code already exists" });
+      // return res.status(400).json({ message: "User with this email or employee code already exists" });
+      return next(new ApiError("User alredy exist", 400))
     }
+
 
     let asset;
     const allocationDate = new Date();
@@ -22,12 +38,13 @@ export const addUser = async (req, res, next) => {
     if (assetId) {
       asset = await Asset.findById(assetId);
       if (!asset || asset.status !== "available") {
-        return res.status(400).json({ message: "Asset not available for allocation" });
+        return next(new ApiError("Asset not available for allocation", 400));
       }
     }
 
     // ✅ Step 3: Create user but don't save yet
     const newUser = new User(userData);
+
 
     // ✅ Step 4: If asset exists, set allocation fields
     if (asset) {
@@ -56,7 +73,8 @@ export const addUser = async (req, res, next) => {
       await asset.save();
     }
 
-
+    await session.commitTransaction();
+    session.endSession();
     // ✅ Step 7: Send email based on asset condition
     let subject = "";
     let text = "";
@@ -98,14 +116,29 @@ Haldyn Glass IT Team`;
     });
 
   } catch (err) {
-    console.error("Error adding user:", err);
-    return res.status(500).json({ message: "Server error" });
+    session.abortTransaction();
+    session.endSession();
+    next(err)
+    //   console.error('Error adding user:', err);
+    // // ✅ Controlled error
+    // if (err.statusCode) {
+    //   return res.status(err.statusCode).json({
+    //     success: false,
+    //     message: err.message,
+    //   });
+    // }
+
+    // // ❌ Unhandled error
+    // return res.status(500).json({
+    //   success: false,
+    //   message: 'Server error',
+    // });
   }
 };
 
 
 
-
+// ✅ handled errors
 export const getAllUsers = async (req, res, next) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
@@ -114,12 +147,16 @@ export const getAllUsers = async (req, res, next) => {
       users,
     });
   } catch (error) {
-    ErrorHandler(error, req, res, next);
-    console.error('Error fetching users:', error);
+    // next(new ApiError('Error fetching users', 500));
+    console.log(error);
+
+    next(error)
   }
 }
 
 
+
+// ✅ handled errors
 export const getUserById = async (req, res, next) => {
   try {
 
@@ -132,18 +169,14 @@ export const getUserById = async (req, res, next) => {
         model: "Asset",
       });
 
-    console.log("=== Assigned Items ===");
-    console.log(user.assignedItems.map(a => ({
-      assetId: a.asset?._id,
-      deviceName: a.asset?.deviceName,
-      model: a.asset?.modelNumber,
-    })));
+    if (!user) {
+      return next(new ApiError('User not found', 404));
+    }
+
     const asset = await Asset.find({ allocatedTo: user._id });
 
 
-    if (!user) {
-      return next(new ErrorHandler('User not found', 404));
-    }
+
     res.status(200).json({
       success: true,
       user,
@@ -165,12 +198,12 @@ export const updateUser = async (req, res) => {
       { new: true, runValidators: true }
     );
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return next(new ApiError("User not found", 404))
     }
     res.status(200).json({ message: "User updated", user: updatedUser });
   } catch (err) {
     console.error("Error updating user:", err);
-    res.status(500).json({ message: "Update failed", error: err.message });
+    next(err)
   }
 };
 

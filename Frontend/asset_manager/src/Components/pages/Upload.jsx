@@ -1,13 +1,33 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { toast } from "react-hot-toast";
 
 export const ExcelUpload = () => {
   const [userFileName, setUserFileName] = useState("");
   const [assetFileName, setAssetFileName] = useState("");
+  const navigate = useNavigate();
 
   const userInputRef = useRef(null);
   const assetInputRef = useRef(null);
+
+  // 🔒 Auth check: run on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        console.log("try for check")
+        
+        await api.get("admin/auth/me", { withCredentials: true }); // ✅ use credentials
+      } catch (error) {
+        console.log("in uplaod page : " ,error);
+        
+        toast.error("You must be logged in to access this page");
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleUpload = async (type) => {
     const fileInput = type === "user" ? userInputRef.current : assetInputRef.current;
@@ -27,8 +47,15 @@ export const ExcelUpload = () => {
       if (type === "user") setUserFileName("");
       else setAssetFileName("");
     } catch (error) {
-      console.error(error);
-      toast.error("Upload failed");
+      if (error.code === "ERR_NETWORK") {
+        console.log("Network error:", error);
+        toast.error("Network error. Authentication failed.");
+      } else {
+        console.log("Upload error:", error);
+        
+        const message = error.response?.data?.message || "Upload failed";
+        toast.error(message);
+      }
     }
   };
 

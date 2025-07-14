@@ -23,7 +23,7 @@ export const Login = () => {
       const res = await api.post("admin/login", form);
       if (res.data.success) {
         toast.success("Login successful!");
-        setTimeout(() => navigate("/dashboard"), 2000); // Or your target page
+        setTimeout(() => navigate("/dashboard"), 1000); // Or your target page
       } else {
         toast.error(res.data.message || "Invalid credentials");
       }
@@ -49,7 +49,7 @@ export const Login = () => {
               placeholder="Email"
               value={form.email}
               onChange={handleChange}
-              required
+             
               className="pl-10 pr-3 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
             />
           </div>
@@ -62,7 +62,7 @@ export const Login = () => {
               placeholder="Password"
               value={form.password}
               onChange={handleChange}
-              required
+             
               className="pl-10 pr-10 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 transition"
             />
             <span

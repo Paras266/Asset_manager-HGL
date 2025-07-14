@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import toast from "react-hot-toast";
 
 export const AllocatedAssets = () => {
   const [assets, setAssets] = useState([]);
@@ -13,6 +14,7 @@ export const AllocatedAssets = () => {
       try {
         const res = await api.get("/assets/getAllocatedAssets");
         const data = res.data.data || [];
+        toast.success(res.data.message || "Allocated assets fetched successfully");
         setAssets(data);
 
         // Extract unique device types

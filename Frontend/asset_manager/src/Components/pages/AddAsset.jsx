@@ -8,6 +8,8 @@ const initialState = {
   deviceType: "",
   OsKey: "",
   OfficeKey: "",
+  operatingSystem: "",
+  officeApplication: "",
   modelNumber: "",
   partNumber: "",
   serialNumber: "",
@@ -36,30 +38,65 @@ const initialState = {
   monitorScreenSize: "",
   monitorSerialNumber: "",
   otherDetails: "",
+  file: null, // for file upload
   status: "available"
 };
 
 export const AddAsset = () => {
   const [form, setForm] = useState(initialState);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  // Handles both text and file inputs
+  const [invoiceFile, setInvoiceFile] = useState(null);
 
-  const handleSubmit = async (e) => {    
-    e.preventDefault();
-    try {
-      
-      const res = await api.post("/assets/add", form);
-      toast.success("Asset added successfully");
-      setForm(initialState);
-    } catch (error) {
-      
-      toast.error("Failed to add asset , please check all the details");
-      console.error("faield" , error);
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === "file") {
+      setForm((prev) => ({ ...prev, [name]: files[0] }));
+      setInvoiceFile(files[0]);
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
+
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    // Step 1: Submit asset details (excluding invoiceFile)
+    const { file, ...assetData } = form;
+
+    const res = await api.post("/assets/add", assetData);
+    console.log(res.data);
+    
+    const assetId = res.data.asset._id;
+    console.log(assetId);
+    
+    // Step 2: If invoice selected, upload it
+    if (invoiceFile) {
+      const formData = new FormData();
+      formData.append("file", invoiceFile);
+
+      await api.put(`/assets/uploadInvoice/${assetId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast.success("Invoice uploaded");
+    }
+
+    toast.success("Asset added successfully");
+    setForm(initialState);
+    setInvoiceFile(null); // Reset file input
+    // Reset the file input element's value as well
+    if (document.querySelector('input[type="file"][name="file"]')) {
+      document.querySelector('input[type="file"][name="file"]').value = "";
+    }
+  } catch (error) {
+    const message = error.response?.data?.message || "Failed to add asset";
+    toast.error(message);
+    console.error("Asset add failed", error);
+  }
+};
+
 
   return (
     <div className="p-4 md:p-8 max-h-screen overflow-y-auto">
@@ -69,6 +106,8 @@ export const AddAsset = () => {
           { label: "Device Type", name: "deviceType", type: "select", options: ['Laptop', 'Desktop System', 'Monitor', 'Printer', 'UPS' ,'Storage Devices' , 'Server','Networking Devices', 'Wireless Mouse', 'Keyboard and Mouse' ,'Other'] },
           { label: "OS Key", name: "OsKey" },
           { label: "Office Key", name: "OfficeKey" },
+          { label: "Operating System", name: "operatingSystem" },
+          { label: "Office Application", name: "officeApplication" },
           { label: "Model Number", name: "modelNumber" },
           { label: "Part Number", name: "partNumber" },
           { label: "Serial Number", name: "serialNumber" },
@@ -97,8 +136,10 @@ export const AddAsset = () => {
           { label: "Monitor Screen Size", name: "monitorScreenSize" },
           { label: "Monitor Serial Number", name: "monitorSerialNumber" },
           { label: "Other Details", name: "otherDetails" },
-          { label: "Status", name: "status", type: "select", options: ["available", "allocated", "repair", "damaged"] }
-        ].map(({ label, name, type, options }) => (
+          { label: "Status", name: "status", type: "select", options: ["available", "repair", "damaged"] } ,
+          { label: "Upload Invoice", name: "file" , type: "file" , accept: ".jpg,.jpeg,.png,.webp,.pdf" }
+
+        ].map(({ label, name, type,accept, options }) => (
           <div key={name} className="flex flex-col">
             <label htmlFor={name} className="font-medium mb-1">{label}</label>
             {type === "select" ? (
@@ -112,9 +153,10 @@ export const AddAsset = () => {
               <input
                 type={type || "text"}
                 name={name}
-                value={form[name]}
-                onChange={handleChange}
-                className="border border-gray-300 p-2 rounded"
+                {...(type === "file"
+                  ? { onChange: handleChange, className: "border border-gray-300 p-2 rounded", accept }
+                  : { value: form[name] || "", onChange: handleChange, className: "border border-gray-300 p-2 rounded" }
+                )}
               />
             )}
           </div>

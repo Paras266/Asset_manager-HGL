@@ -5,20 +5,25 @@ const assetSchema = new mongoose.Schema(
     deviceType: {
       type: String,
       required: true,
-      enum: ['Laptop', 'Desktop System', 'Monitor', 'Printer',  'UPS' ,'Storage Devices' , 'Server','Networking Devices', 'Wireless Mouse', 'Keyboard and Mouse' ,'Other'],
+      enum: ['Laptop', 'Desktop System', 'Monitor', 'Printer', 'UPS', 'Storage Devices', 'Server', 'Networking Devices', 'Wireless Mouse', 'Keyboard and Mouse', 'Other'],
     },
     OsKey: {
       type: String,
       trim: true,
-      match: [/^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$/, 'Invalid OS Key format'],
- 
+      // match: [/^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$/, 'Invalid OS Key format'],
+
     },
+
+    invoice: {
+      type: String,
+      default: null,
+    } ,
     
     OfficeKey: {
       type: String,
       trim: true,
-      match: [/^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$/, 'Invalid Office Key format'],
-      
+      // match: [/^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$/, 'Invalid Office Key format'],
+
     },
     modelNumber: {
       type: String,
@@ -49,7 +54,7 @@ const assetSchema = new mongoose.Schema(
     },
     storageType: {
       type: String,
-      enum: ['SATA', 'SSD', 'HDD', 'NVMe' , 'None'],
+      enum: ['SATA', 'SSD', 'HDD', 'NVMe', 'None'],
       trim: true,
     },
     storageCapacity: {
@@ -62,7 +67,7 @@ const assetSchema = new mongoose.Schema(
     },
     ipAssignment: {
       type: String,
-      enum: ['Manual', 'DHCP' , 'None'],
+      enum: ['Manual', 'DHCP', 'None'],
       trim: true,
     },
     ipAddress: {
@@ -151,8 +156,8 @@ const assetSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-// Allocation history
-// This will store the history of allocations and deallocations
+    // Allocation history
+    // This will store the history of allocations and deallocations
     allocationHistory: [
       {
         user: {
@@ -169,20 +174,29 @@ const assetSchema = new mongoose.Schema(
         },
       }
     ],
-    
-        // Reference to current user (optional)
 
-      
+    // Reference to current user (optional)
+
+
     allocatedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null,
     },
 
+    operatingSystem: {
+      type: String,
+
+    },
+
+    officeApplication: {
+      type: String
+    },
+
 
     status: {
       type: String,
-      enum: ['available', 'allocated', 'repair', 'damaged' , "scrape"],
+      enum: ['available', 'allocated', 'repair', 'damaged', "scrape"],
       default: 'available',
     },
   },

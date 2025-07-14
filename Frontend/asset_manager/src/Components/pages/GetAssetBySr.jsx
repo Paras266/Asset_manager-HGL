@@ -14,7 +14,8 @@ export const GetAssetBySr = () => {
       const res = await api.post("/assets/getAssetsBySerialno", { serialNumber });
       setAsset(res.data.data);
     } catch (err) {
-      toast.error("Asset not found");
+      const message = err.response?.data?.message || "Failed to fetch asset";
+      toast.error(message);
       setAsset(null);
     } finally {
       setLoading(false);
@@ -30,7 +31,8 @@ export const GetAssetBySr = () => {
       setAsset(null);
       setSerialNumber("");
     } catch (err) {
-      toast.error("Failed to delete asset");
+      const message = err.response?.data?.message || "Failed to delete asset";
+      toast.error(message);
     }
   };
 

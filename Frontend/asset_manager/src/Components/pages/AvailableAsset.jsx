@@ -11,10 +11,11 @@ export const AvailableAssets = () => {
     const fetchAssets = async () => {
       try {
         const res = await api.get("/assets/getAvailableAssets");
+        toast.success(res.data.message || "Assets fetched successfully");
         setAllAssets(res.data.data || []);
       } catch (error) {
         console.error("Failed to fetch assets:", error);
-        toast.error("Failed to fetch available assets");
+        toast.error(error.response?.data?.message || "Failed to fetch assets");
       }
     };
     fetchAssets();
